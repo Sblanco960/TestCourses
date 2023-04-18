@@ -17,10 +17,7 @@ return new class extends Migration
             $table->string('last_name',100);
             $table->integer('age');
             $table->string('email',70);
-            $table->foreign('course_id')
-            ->references('id')
-            ->on('courses')        
-            ->onUpdate('cascade')->onDelete('restrict');            
+            $table->json('courses_id')->nullable();         
             $table->timestamps();
         });
     }

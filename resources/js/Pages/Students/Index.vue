@@ -9,6 +9,7 @@ import DangerButton from '@/Components/DangerButton.vue';
 import Swal from 'sweetalert2';
 import Modal from '@/Components/Modal.vue'
 import VueTalwindPagination from '@ocrv/vue-tailwind-pagination';
+import { nextTick,ref } from 'vue';
 
 
 
@@ -143,6 +144,13 @@ const deleteStudent = (id,name) => {
 
                 <InputLabel for="email" value="Correo Estudiante:"></InputLabel>
                 <TextInput id="email" ref="nameInput" v-model="form.email"></TextInput>
+
+                <InputLabel for="email" value="Correo Estudiante:"></InputLabel>
+                <ul v-for="course in courses" :key="course.id">
+                    <li>
+                        <input type="checkbox" v-model="form.checkbox"> &nbsp; <b>{{ course.name_course }}</b>
+                    </li>
+                </ul>
 
             </div>
         </Modal>
