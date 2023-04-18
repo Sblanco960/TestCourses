@@ -13,12 +13,23 @@ class StudentsController extends Controller
     
     public function index()
     {
-        $students = Students::select('students.id', 'students.name','students.last_name','students.age','students.email','students.course_id','courses.name_course as courses')
-        ->join('courses','courses.id','=','students.course_id')
-        ->paginate(10);
+        $students = Students::        
+        select('students.id', 'students.name','students.last_name','students.age','students.email')
+        ->get();
+
+        $posts = Students::select('students.id', 'students.name','students.last_name','students.age','students.email','courses.name_course as courses')
+            ->from('students')
+            ->join('courses_students', function($query){
+                $query->on('courses_students.students_id', '=', 'students.id');
+            })->where('courses_students.id', '=', 1)->get();
+        
+            return $posts;
+
+        $endStudents = [];
+
 
         $courses = Courses::all();
-        return Inertia::render('Students/Index',['students'=>$students,'courses'=>$courses]);
+        return Inertia::render('Students/Index',['students'=>$endStudents,'courses'=>$courses]);
     }
 
     
@@ -33,8 +44,10 @@ class StudentsController extends Controller
             'courses' => 'required'
         ]);
 
-        $students = new Students($request->input());
+        
+        $students = new Students($request->input());        
         $students->save();
+        $students->courses()->attach($request->courses);
         return redirect('students');
     }
 

@@ -5,6 +5,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import Swal from 'sweetalert2';
 import Modal from '@/Components/Modal.vue'
@@ -21,14 +22,62 @@ const id = ref('')
 
 
 const props = defineProps({
-    students:{type:Object},
+    students:{type:[]},
     courses:{type:Object},
 })
 
-
-
-
 console.log('props',props)
+
+const formPage = useForm({});
+
+const onPageClick = (event)=>{
+    formPage.get(route('students.index',{page:event}))
+}
+
+const openModal = (op,name,last_name,age,email,student)=>{
+
+    modal.value = true;
+    nextTick(()=>nameInput.value.focus);
+    operation.value =op;
+    id.value = student;
+
+    if (op == 1) {
+        title.value = 'Crear Estudiante';
+    }else{
+        title.value = 'Editar Estudiante';
+        form.name = name;
+        form.last_name = last_name;
+        form.age = age;
+        form.email = email;
+
+    }
+
+}
+
+
+const closeModal = () => {
+    modal.value = false;
+    form.reset();
+}
+
+const save = () => {
+    if (operation.value == 1) {
+
+        form.post(route('students.store'),{
+            onSuccess: () => {ok('Estudiante creado con extio')}
+        })
+    }else{
+        form.put(route('students.update',id.value),{
+            onSuccess:()=>{ok('Estudiante Actualizado')}
+        })
+    }
+}
+
+const ok = (msj) => {
+    form.reset();
+    closeModal();
+    Swal.fire({title:msj,icon:'success'})
+}
 
 const form = useForm({
     id:'',
@@ -52,7 +101,9 @@ const deleteStudent = (id,name) => {
         cancelButtonText:'<i class="fa fa-solid fa-ban"></i> Cancelar',
     }).then(resp=>{
         if (resp.isConfirmed) {
-            form.delete(route('students.destroy',id));
+            form.delete(route('students.destroy',id),{
+                onSuccess:()=>{ok('Estudiante Eliminado')}
+            })
         }
     })
 
@@ -71,9 +122,9 @@ const deleteStudent = (id,name) => {
         <div class="py-12">
             <div class="bg-white grid v-screem place-items-center">
                 <div class="mt-3 mb-3 flex">
-                    <Link :href="route('students.create')" :class="'px-4 py-2 bg-gray-800 text-white border rounded-md font-semibold text-xs'">
+                    <PrimaryButton @click="openModal(1)">
                         <i class="fa fa-solid fa-plus-circle"></i> Agregar
-                    </Link>
+                    </PrimaryButton>
                 </div>
             </div>
 
@@ -92,7 +143,7 @@ const deleteStudent = (id,name) => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="student,i in students.data" :key="student.id">
+                        <tr v-for="student,i in students" :key="student.id">
                             <td class="border border-gray-400 px-4 py-4">{{ i+1 }}</td>
                             <td class="border border-gray-400 px-4 py-4">{{ student.name }}</td>
                             <td class="border border-gray-400 px-4 py-4">{{ student.last_name }}</td>
@@ -135,23 +186,32 @@ const deleteStudent = (id,name) => {
             <div class="p-3 mt-6 ">
                 <InputLabel for="name" value="Nombre Estudiante:"></InputLabel>
                 <TextInput id="name" ref="nameInput" v-model="form.name"></TextInput>
+                <InputError :message="form.errors.name" class="mt-2"></InputError>
 
                 <InputLabel for="last_name" value="Apellido Estudiante:"></InputLabel>
                 <TextInput id="last_name" ref="nameInput" v-model="form.last_name"></TextInput>
+                <InputError :message="form.errors.last_name" class="mt-2"></InputError>
 
                 <InputLabel for="age" value="Edad Estudiante:"></InputLabel>
-                <TextInput id="age" ref="nameInput" v-model="form.age"></TextInput>            
+                <TextInput id="age" type="number" ref="nameInput" v-model="form.age"></TextInput>            
+                <InputError :message="form.errors.age" class="mt-2"></InputError>
 
                 <InputLabel for="email" value="Correo Estudiante:"></InputLabel>
-                <TextInput id="email" ref="nameInput" v-model="form.email"></TextInput>
-
-                <InputLabel for="email" value="Correo Estudiante:"></InputLabel>
+                <TextInput id="email" type="email" ref="nameInput" v-model="form.email"></TextInput>
+                <InputError :message="form.errors.email" class="mt-2"></InputError>
+                
                 <ul v-for="course in courses" :key="course.id">
                     <li>
-                        <input type="checkbox" v-model="form.checkbox"> &nbsp; <b>{{ course.name_course }}</b>
+                        <input type="checkbox" :value="course.id" v-model="form.courses"> &nbsp; <b>{{ course.name_course }}</b>
                     </li>
                 </ul>
 
+            </div>
+
+            <div class="p-3 mt-6 ">
+                <PrimaryButton :disabled="form.processing" @click="save">
+                    <i class="fa-solid fa-save"></i> Crear
+                </PrimaryButton>
             </div>
         </Modal>
 

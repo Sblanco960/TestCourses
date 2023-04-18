@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Courses;
+use App\Models\Students;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,7 +12,8 @@ class CoursesController extends Controller
     
     public function index()
     {
-        $courses = Courses::all();
+        $courses = Courses::all()->join('courses_students','courses_students.students_id','=','courses_id.id');
+
         return Inertia::render('Courses/Index',['courses'=>$courses]);
     }
 
