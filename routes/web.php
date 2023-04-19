@@ -38,6 +38,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('courses', CoursesController::class);
     Route::resource('students', StudentsController::class);
+
+    Route::post('searchData',[CoursesController::class,'searchData']);
+
 });
 
 require __DIR__.'/auth.php';

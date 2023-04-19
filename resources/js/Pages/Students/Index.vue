@@ -22,7 +22,7 @@ const id = ref('')
 
 
 const props = defineProps({
-    students:{type:[]},
+    students:{type:Object},
     courses:{type:Object},
 })
 
@@ -34,21 +34,24 @@ const onPageClick = (event)=>{
     formPage.get(route('students.index',{page:event}))
 }
 
-const openModal = (op,name,last_name,age,email,student)=>{
-
+const openModal = (op,student,name,last_name,age,email,courses)=>{
+        
     modal.value = true;
     nextTick(()=>nameInput.value.focus);
     operation.value =op;
-    id.value = student;
 
     if (op == 1) {
         title.value = 'Crear Estudiante';
     }else{
+        id.value = student.id;
         title.value = 'Editar Estudiante';
+        form.id = student.id;
         form.name = name;
         form.last_name = last_name;
         form.age = age;
         form.email = email;
+        form.courses = []
+        courses.map((course)=>form.courses.push(course.id));        
 
     }
 
@@ -62,11 +65,14 @@ const closeModal = () => {
 
 const save = () => {
     if (operation.value == 1) {
-
+        form.courses = JSON.stringify(form.courses)
+        console.log('form',form)
         form.post(route('students.store'),{
             onSuccess: () => {ok('Estudiante creado con extio')}
         })
     }else{
+        form.courses = JSON.stringify(form.courses)
+        console.log('id.value',id.value)
         form.put(route('students.update',id.value),{
             onSuccess:()=>{ok('Estudiante Actualizado')}
         })
@@ -150,20 +156,19 @@ const deleteStudent = (id,name) => {
                             <td class="border border-gray-400 px-4 py-4">{{ student.age }}</td>
                             <td class="border border-gray-400 px-4 py-4">{{ student.email }}</td>
                             <td class="border border-gray-400 px-4 py-4">
-                                <li>{{ student.courses }}</li>
-                                <!-- <ul v-for="course in student.courses">
-                                    <li>{{ student.courses }}</li>
-                                </ul> -->
+                                <ul v-for="course in student.courses">
+                                    <li>{{ course.name_course }}</li>
+                                </ul>
                             </td>
                             <td class="border border-gray-400 px-4 py-4">
-                                <Link :href="route('students.edit',student.id)" :class="'px-4 py-2 bg-yellow-400 text-white border rounded-md font-semibold text-xs'">
+                                <PrimaryButton @click="openModal(2,student,student.name,student.last_name,student.age,student.email,student.courses)">
                                     <i class="fa-solid fa-edit"></i>
-                                </Link>
+                                </PrimaryButton>
                             </td>
                             <td class="border border-gray-400 px-4 py-4">
                                 <DangerButton @click="deleteStudent(student.id,student.name)">
                                     <i class="fa-solid fa-trash"></i>
-                                </DangerButton>
+                                </DangerButton>                                
                             </td>
                         </tr>
                     </tbody>
@@ -173,7 +178,7 @@ const deleteStudent = (id,name) => {
             
             <div class="bg-white grid v-screem place-items-center">
                 <VueTalwindPagination
-                    :current="students.curretPage" :total="students.total"
+                    :current="students.currentPage" :total="students.total"
                     :per-page="students.perPage"
                     @page-changed="onPageClick($event)"
                 ></VueTalwindPagination>
@@ -210,7 +215,7 @@ const deleteStudent = (id,name) => {
 
             <div class="p-3 mt-6 ">
                 <PrimaryButton :disabled="form.processing" @click="save">
-                    <i class="fa-solid fa-save"></i> Crear
+                    <i class="fa-solid fa-save"></i> Guardar
                 </PrimaryButton>
             </div>
         </Modal>

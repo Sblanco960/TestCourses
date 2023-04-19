@@ -13,20 +13,17 @@ class StudentsController extends Controller
     
     public function index()
     {
-        $students = Students::        
-        select('students.id', 'students.name','students.last_name','students.age','students.email')
-        ->get();
-
-        $posts = Students::select('students.id', 'students.name','students.last_name','students.age','students.email','courses.name_course as courses')
-            ->from('students')
-            ->join('courses_students', function($query){
-                $query->on('courses_students.students_id', '=', 'students.id');
-            })->where('courses_students.id', '=', 1)->get();
-        
-            return $posts;
+        $students = Students::select('students.id', 'students.name','students.last_name','students.age','students.email','students.courses')->get();
 
         $endStudents = [];
-
+        
+        foreach ($students as $key => $student) {
+            
+            $courses = json_decode($student['courses'],true);
+            $student['courses'] = Courses::select('id','name_course')->find($courses);
+            array_push($endStudents,$student);
+            
+        }
 
         $courses = Courses::all();
         return Inertia::render('Students/Index',['students'=>$endStudents,'courses'=>$courses]);
@@ -43,11 +40,9 @@ class StudentsController extends Controller
             'email',
             'courses' => 'required'
         ]);
-
-        
-        $students = new Students($request->input());        
-        $students->save();
-        $students->courses()->attach($request->courses);
+                        
+        $students = new Students($request->input());
+        $students->save();        
         return redirect('students');
     }
 
@@ -61,7 +56,7 @@ class StudentsController extends Controller
         //
     }
 
-    public function update(Request $request, Students $students)
+    public function update(Request $request, Students $student)
     {
 
         $request->validate([
@@ -69,10 +64,10 @@ class StudentsController extends Controller
             'last_name|max100',
             'age',
             'email',
-            'departmen_id' => 'required|numeric'
+            'courses' => 'required'
         ]);
-
-        $students->update($request->input());        
+        
+        $student->update($request->input());        
         return redirect('students');
 
     }

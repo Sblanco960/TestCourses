@@ -3,11 +3,23 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head,Link,useForm } from '@inertiajs/vue3';
 import DangerButton from '@/Components/DangerButton.vue';
 import Swal from 'sweetalert2';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { nextTick,ref } from 'vue';
+import axios from 'axios';
+import Modal from '@/Components/Modal.vue'
+import TextInput from '@/Components/TextInput.vue';
+import InputLabel from '@/Components/InputLabel.vue';
 
 const props = defineProps({
     courses:{type:Object}
 })
 
+const title = ref(null)
+const modal = ref(false)
+const dataCourses = ref(null)
+const selectOption = ref('')
+const startDate = ref(null)
+const endDate = ref(null)
 
 const form = useForm({
     id:'',
@@ -34,7 +46,35 @@ const deleteCourse = (id,name) => {
         }
     })
 
+
 }
+
+const openModal = () => {
+    
+    modal.value = true;
+
+    title.value = 'Consultar Cursos'
+
+}
+
+const closeModal = () => {
+    modal.value = false;
+}
+
+const searchData  = () =>{
+
+    axios.post('searchData',{
+        startDate:startDate.value,
+        endDate:endDate.value,
+        selectOption:selectOption.value
+    })
+
+    .then(resp=>{
+        
+    })
+
+}
+
 
 </script>
 
@@ -53,6 +93,13 @@ const deleteCourse = (id,name) => {
                         <i class="fa fa-solid fa-plus-circle"></i> Agregar
                     </Link>
                 </div>
+
+                <div class="mt-3 mb-3 flex">
+                    <PrimaryButton @click="openModal">
+                        <i class="fa-solid fa-search"></i> Consultar
+                    </PrimaryButton>                    
+                </div>
+
             </div>
 
             <div class="bg-white grid v-screem place-items-center">
@@ -91,5 +138,51 @@ const deleteCourse = (id,name) => {
 
             </div>
         </div>
+
+        <Modal :show="modal" @close="closeModal">
+            <h2 class="p-3 text-lg font.medium text-hray-9000">{{ title }}</h2>
+            <div class="p-3 mt-6 ">
+                <div class="card">
+                    <div class="card-body">
+                                        
+                        <div class="row">
+                            <InputLabel value="Seleccionar Fecha Inicial de Consulta"></InputLabel>
+                            <TextInput type="date" v-model="startDate"></TextInput>    
+                        </div>
+
+                        <br><br>
+                        
+                        <div class="row">                                    
+                            <InputLabel for="endDate" value="Seleccionar Fecha Final de Consulta"></InputLabel>
+                            <TextInput type="date" v-model="endDate"></TextInput>
+                        </div>
+
+                        <br><br>
+
+                        <div class="row">
+                            <InputLabel for="option1" value="Consultar el top de los 2 cursos con mas estudiantes asignados segun el rango de fechas seleccionado:"></InputLabel>
+                            <input type="radio" v-model="selectOption" :value="2"/> &nbsp;    
+                        </div>
+
+                        <br><br>
+                        
+                        <div class="row">
+                            <InputLabel for="option1" value="Consultar el top de los 3 cursos con mas estudiantes asignados segun el rango de fechas seleccionado:"></InputLabel>
+                            <input type="radio" v-model="selectOption" :value="3"/> &nbsp;    
+                        </div>
+
+                    </div>  
+
+                </div>
+                
+            </div>
+
+            <div class="p-3 mt-6 " v-if="startDate != null  && endDate != null && selectOption != ''">
+                <PrimaryButton :disabled="form.processing" @click="searchData">
+                    <i class="fa-solid fa-search"></i> Consultar
+                </PrimaryButton>
+            </div>
+        </Modal>
+
     </AuthenticatedLayout>
 </template>
