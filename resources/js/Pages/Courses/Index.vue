@@ -16,7 +16,9 @@ const props = defineProps({
 
 const title = ref(null)
 const modal = ref(false)
+const modalCourse = ref(false)
 const dataCourses = ref(null)
+const titleData = ref(null)
 const selectOption = ref('')
 const startDate = ref(null)
 const endDate = ref(null)
@@ -61,6 +63,10 @@ const closeModal = () => {
     modal.value = false;
 }
 
+const closeModalCourse = () => {
+    modalCourse.value = false;
+}
+
 const searchData  = () =>{
 
     axios.post('searchData',{
@@ -70,7 +76,13 @@ const searchData  = () =>{
     })
 
     .then(resp=>{
-        
+        dataCourses.value = resp.data;
+        modal.value = false;
+        modalCourse.value = true;
+        titleData.value = 'Cursos Consultados por cantidad de estudiantes'
+        startDate.value = null;
+        endDate.value = null;
+        selectOption.value = '';
     })
 
 }
@@ -96,7 +108,7 @@ const searchData  = () =>{
 
                 <div class="mt-3 mb-3 flex">
                     <PrimaryButton @click="openModal">
-                        <i class="fa-solid fa-search"></i> Consultar
+                        <i class="fa-solid fa-search"></i> &nbsp;Consultar
                     </PrimaryButton>                    
                 </div>
 
@@ -180,6 +192,53 @@ const searchData  = () =>{
             <div class="p-3 mt-6 " v-if="startDate != null  && endDate != null && selectOption != ''">
                 <PrimaryButton :disabled="form.processing" @click="searchData">
                     <i class="fa-solid fa-search"></i> Consultar
+                </PrimaryButton>
+            </div>
+        </Modal>
+
+        <Modal :show="modalCourse" @close="closeModal">
+            <h2 class="p-3 text-lg font.medium text-hray-9000">{{ titleData }}</h2>
+            <div class="p-3 mt-6 ">
+                <div class="card">
+                    <div class="card-body">
+                                        
+                        <div class="bg-white grid v-screem place-items-center">
+
+                            <table class="table-auto border border-gray-400">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="px-4 py-4">#</th>
+                                        <th class="px-4 py-4">Curso</th>
+                                        <th class="px-4 py-4">Cantidad de Estudiantes </th>
+                                        <th class="px-4 py-4">Estudiantes que pertenecen al curso</th>                                    
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="course,i in dataCourses" :key="course.id">
+                                        <td class="border border-gray-400 px-4 py-4">{{ i+1 }}</td>
+                                        <td class="border border-gray-400 px-4 py-4">{{ course.name_course }}</td>
+                                        <td class="border border-gray-400 px-4 py-4">{{ course.studentsTotal }}</td>
+                                        <td class="border border-gray-400 px-4 py-4">
+                                            <ul v-for="student in course.students">
+                                                <li>{{ student.name }}</li>
+                                            </ul>
+                                        </td>
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>  
+
+                </div>
+                
+            </div>
+
+            <div class="p-3 mt-6 ">
+                <PrimaryButton :disabled="form.processing" @click="closeModalCourse()">
+                    <i class="fa-solid fa-close"></i> &nbsp; Salir
                 </PrimaryButton>
             </div>
         </Modal>

@@ -96,38 +96,25 @@ class CoursesController extends Controller
 
             if (count($filterStudents)) {
                 $course['students'] = $filterStudents;
+                $course['studentsTotal'] = count($filterStudents);
                 $filterCourses[] = $course;
             }
         
         }
 
-        $j = 0;
-        $courserMaxStudents = [];
-
-        while($j <= $request->selectOption){
-            
-            $s=0;
-            $mayor = count($filterCourses[$s]['students']);   
-            $count = count($filterCourses) - 1;
-
-            for ($i=0; $i <= $count; $i++) { 
-
-                if ( $mayor < count($filterCourses[$i]['students']) ) {
-                    if (!in_array($filterCourses[$i],$courserMaxStudents)) {
-                        $courserMaxStudents[] = $filterCourses[$i];
-                        
-                    }                
-                }
-
-                $s++;
-
-            }
-
-            $j++;
-            
+        foreach ($filterCourses as $key => $row) {
+            $distance[$key] = $row['studentsTotal'];
         }
 
-        return $courserMaxStudents;                
+        array_multisort($distance, SORT_DESC, $filterCourses);
 
+        $courserMaxStudents = [];
+        $cantOption = $request->selectOption -1 ;
+        for ($i=0; $i <= $cantOption ; $i++) { 
+            array_push($courserMaxStudents,$filterCourses[$i]);
+        }
+     
+        return $courserMaxStudents; 
+                          
     }
 }
